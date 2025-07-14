@@ -12,19 +12,28 @@
 
 (define *active-scroll-id* 0)
 
+(define (calculate-delay size)
+  (cond
+    [(>= size 40) 0]
+    [(>= size 20) 1]
+    [else 2]))
+
 (define (start-smooth-scroll direction size #:step [step 1])
+  ; TODO: calculate step automatically, similarly to delay calculation
   (set! *active-scroll-id* (+ *active-scroll-id* 1))
   (let ([my-scroll-id *active-scroll-id*]
         [scroll-fn (match direction
                      ['up scroll_up]
                      ['down scroll_down]
-                     [_ (error "Invalid scroll direction" direction)])])
+                     [_ (error "Invalid scroll direction" direction)])]
+        [delay-ms (calculate-delay size)])
     (let loop ([remaining size])
       (when (> remaining 0)
         (repeat-n-times scroll-fn step)
-        (enqueue-thread-local-callback (lambda ()
-                                         (when (= my-scroll-id *active-scroll-id*)
-                                           (loop (- remaining step)))))))))
+        (enqueue-thread-local-callback-with-delay delay-ms
+                                                  (lambda ()
+                                                    (when (= my-scroll-id *active-scroll-id*)
+                                                      (loop (- remaining step)))))))))
 
 (define (get-view-height)
   (let ([area (editor-focused-buffer-area)])
