@@ -12,14 +12,14 @@
 
 (define *active-scroll-id* 0)
 
-(define (start-smooth-scroll direction remaining #:step [step 1])
+(define (start-smooth-scroll direction size #:step [step 1])
   (set! *active-scroll-id* (+ *active-scroll-id* 1))
   (let ([my-scroll-id *active-scroll-id*]
         [scroll-fn (match direction
                      ['up scroll_up]
                      ['down scroll_down]
                      [_ (error "Invalid scroll direction" direction)])])
-    (let loop ([remaining remaining])
+    (let loop ([remaining size])
       (when (> remaining 0)
         (repeat-n-times scroll-fn step)
         (enqueue-thread-local-callback (lambda ()
