@@ -3,27 +3,28 @@
 (require "helix/misc.scm")
 (require "helix/static.scm")
 
+(require "src/utils.scm")
+
 (provide half-page-up-smooth
          half-page-down-smooth
          page-up-smooth
          page-down-smooth)
 
-(define (repeat-n-times f n)
-  (let loop ([i n])
-    (when (> i 0)
-      (f)
-      (loop (- i 1)))))
+(define *active-scroll-id* 0)
 
-; TODO: cancel current scroll if pressed again, similar to pgdn/pgup held in Chrome
-(define (scroll-loop direction remaining #:step [step 1])
-  (let ([scroll-fn (match direction
+(define (start-smooth-scroll direction remaining #:step [step 1])
+  (set! *active-scroll-id* (+ *active-scroll-id* 1))
+  (let ([my-scroll-id *active-scroll-id*]
+        [scroll-fn (match direction
                      ['up scroll_up]
                      ['down scroll_down]
                      [_ (error "Invalid scroll direction" direction)])])
     (let loop ([remaining remaining])
       (when (> remaining 0)
         (repeat-n-times scroll-fn step)
-        (enqueue-thread-local-callback (lambda () (loop (- remaining step))))))))
+        (enqueue-thread-local-callback (lambda ()
+                                         (when (= my-scroll-id *active-scroll-id*)
+                                           (loop (- remaining step)))))))))
 
 (define (get-view-height)
   (let ([area (editor-focused-buffer-area)])
@@ -32,14 +33,14 @@
         (error "Unable to retrieve buffer height"))))
 
 (define (half-page-up-smooth)
-  (scroll-loop 'up (/ (get-view-height) 2)))
+  (start-smooth-scroll 'up (/ (get-view-height) 2)))
 
 (define (half-page-down-smooth)
-  (scroll-loop 'down (/ (get-view-height) 2)))
+  (start-smooth-scroll 'down (/ (get-view-height) 2)))
 
 ; TODO: slow down based on initial scroll amount
 (define (page-up-smooth)
-  (scroll-loop 'up (get-view-height)))
+  (start-smooth-scroll 'up (get-view-height)))
 
 (define (page-down-smooth)
-  (scroll-loop 'down (get-view-height)))
+  (start-smooth-scroll 'down (get-view-height)))
