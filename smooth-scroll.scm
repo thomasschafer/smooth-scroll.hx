@@ -14,6 +14,7 @@
       (f)
       (loop (- i 1)))))
 
+; TODO: cancel current scroll if pressed again, similar to pgdn/pgup held in Chrome
 (define (scroll-loop direction remaining #:step [step 1])
   (let ([scroll-fn (match direction
                      ['up scroll_up]
@@ -36,9 +37,9 @@
 (define (half-page-down-smooth)
   (scroll-loop 'down (/ (get-view-height) 2)))
 
-; TODO: calculate step based on initial scroll amount
+; TODO: slow down based on initial scroll amount
 (define (page-up-smooth)
-  (scroll-loop 'up (get-view-height) #:step 2))
+  (scroll-loop 'up (get-view-height)))
 
 (define (page-down-smooth)
-  (scroll-loop 'down (get-view-height) #:step 2))
+  (scroll-loop 'down (get-view-height)))
