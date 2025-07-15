@@ -21,11 +21,10 @@
     [else 10]))
 
 (define (calculate-step size)
-  (ceiling (/ size 40)))
+  (ceiling (/ size 50)))
 
 (define (move_up_single)
   (begin
-    ; TODO: only call `move_visual_line_up` if line 6 or greater
     (move_visual_line_up)
     (scroll_up)))
 
@@ -33,7 +32,8 @@
 (define (move_down_single)
   (begin
     (move_visual_line_down)
-    (scroll_down)))
+    (when (>= (get-current-line-number) 6)
+      (scroll_down))))
 
 (define (start-smooth-scroll direction size)
   (set! *active-scroll-id* (+ *active-scroll-id* 1))
@@ -58,11 +58,14 @@
         (- (area-height area) 2) ; TODO: is this correct?
         (error "Unable to retrieve buffer height"))))
 
+(define (half-view-height)
+  (ceiling (/ (get-view-height) 2)))
+
 (define (half-page-up-smooth)
-  (start-smooth-scroll 'up (/ (get-view-height) 2)))
+  (start-smooth-scroll 'up (half-view-height)))
 
 (define (half-page-down-smooth)
-  (start-smooth-scroll 'down (/ (get-view-height) 2)))
+  (start-smooth-scroll 'down (half-view-height)))
 
 (define (page-up-smooth)
   (start-smooth-scroll 'up (get-view-height)))
