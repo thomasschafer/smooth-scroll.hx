@@ -59,14 +59,14 @@
                                                     (when (= my-scroll-id *active-scroll-id*)
                                                       (loop (- remaining step)))))))))
 
-(define (get-view-height)
+(define (view-height)
   (let ([area (editor-focused-buffer-area)])
     (if area
         (- (area-height area) 2)
         (error "Unable to retrieve buffer height"))))
 
 (define (half-view-height)
-  (ceiling (/ (get-view-height) 2)))
+  (ceiling (/ (view-height) 2)))
 
 (define (half-page-up-smooth)
   (start-smooth-scroll 'up (half-view-height)))
@@ -75,7 +75,7 @@
   (start-smooth-scroll 'down (half-view-height)))
 
 (define (page-up-smooth)
-  (start-smooth-scroll 'up (get-view-height)))
+  (start-smooth-scroll 'up (view-height)))
 
 (define (page-down-smooth)
-  (start-smooth-scroll 'down (get-view-height)))
+  (start-smooth-scroll 'down (view-height)))
