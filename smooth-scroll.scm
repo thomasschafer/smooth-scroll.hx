@@ -16,7 +16,11 @@
   (cond
     [(>= size 40) 0]
     [(>= size 20) 1]
-    [else 2]))
+    [(>= size 10) 2]
+    [else 3]))
+
+(define (calculate-step size)
+  (ceiling (/ size 50)))
 
 (define (move_up_single)
   (begin
@@ -30,14 +34,14 @@
     (move_visual_line_down)
     (scroll_down)))
 
-(define (start-smooth-scroll direction size #:step [step 1])
-  ; TODO: calculate step automatically, similarly to delay calculation
+(define (start-smooth-scroll direction size)
   (set! *active-scroll-id* (+ *active-scroll-id* 1))
   (let ([my-scroll-id *active-scroll-id*]
         [scroll-fn (match direction
                      ['up move_up_single]
                      ['down move_down_single]
                      [_ (error "Invalid scroll direction" direction)])]
+        [step (calculate-step size)]
         [delay-ms (calculate-delay size)])
     (let loop ([remaining size])
       (when (> remaining 0)
