@@ -18,13 +18,25 @@
     [(>= size 20) 1]
     [else 2]))
 
+(define (move_up_single)
+  (begin
+    ; TODO: only call `move_visual_line_up` if line 6 or greater
+    (move_visual_line_up)
+    (scroll_up)))
+
+; TODO: don't do anything if at bottom of file
+(define (move_down_single)
+  (begin
+    (move_visual_line_down)
+    (scroll_down)))
+
 (define (start-smooth-scroll direction size #:step [step 1])
   ; TODO: calculate step automatically, similarly to delay calculation
   (set! *active-scroll-id* (+ *active-scroll-id* 1))
   (let ([my-scroll-id *active-scroll-id*]
         [scroll-fn (match direction
-                     ['up scroll_up]
-                     ['down scroll_down]
+                     ['up move_up_single]
+                     ['down move_down_single]
                      [_ (error "Invalid scroll direction" direction)])]
         [delay-ms (calculate-delay size)])
     (let loop ([remaining size])
@@ -47,7 +59,6 @@
 (define (half-page-down-smooth)
   (start-smooth-scroll 'down (/ (get-view-height) 2)))
 
-; TODO: slow down based on initial scroll amount
 (define (page-up-smooth)
   (start-smooth-scroll 'up (get-view-height)))
 
