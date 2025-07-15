@@ -38,9 +38,9 @@
 
 (define (move_down_single)
   (begin
-    (move_visual_line_down)
     (when (>= (get-current-line-number) 6)
-      (scroll_down))))
+      (scroll_down))
+    (move_visual_line_down)))
 
 (define (start-smooth-scroll direction size)
   (set! *active-scroll-id* (+ *active-scroll-id* 1))
