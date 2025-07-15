@@ -2,6 +2,7 @@
 (require "helix/editor.scm")
 (require "helix/misc.scm")
 (require "helix/static.scm")
+(require-builtin helix/core/text)
 
 (require "src/utils.scm")
 
@@ -11,6 +12,13 @@
          page-down-smooth)
 
 (define *active-scroll-id* 0)
+
+(define (at-end-of-document?)
+  (let* ([doc-id (editor->doc-id (editor-focus))]
+         [rope (editor->text doc-id)]
+         [cursor-pos (cursor-position)]
+         [doc-length (rope-len-chars rope)])
+    (>= cursor-pos (- doc-length 1))))
 
 (define (calculate-delay size)
   (cond
@@ -28,7 +36,6 @@
     (move_visual_line_up)
     (scroll_up)))
 
-; TODO: don't do anything if at bottom of file
 (define (move_down_single)
   (begin
     (move_visual_line_down)
@@ -45,7 +52,7 @@
         [step (calculate-step size)]
         [delay-ms (calculate-delay size)])
     (let loop ([remaining size])
-      (when (> remaining 0)
+      (when (and (> remaining 0) (not (and (eq? direction 'down) (at-end-of-document?))))
         (repeat-n-times scroll-fn step)
         (enqueue-thread-local-callback-with-delay delay-ms
                                                   (lambda ()
@@ -55,7 +62,7 @@
 (define (get-view-height)
   (let ([area (editor-focused-buffer-area)])
     (if area
-        (- (area-height area) 2) ; TODO: is this correct?
+        (- (area-height area) 2)
         (error "Unable to retrieve buffer height"))))
 
 (define (half-view-height)
