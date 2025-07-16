@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'cog.scm'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Create release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from cog.scm
+        id: get-version
+        run: |
+          version=$(grep '^(define version' cog.scm | sed 's/.*"\(.*\)".*/\1/')
+          if [ -z "$version" ]; then
+            echo "Error: Could not extract version from cog.scm" >&2
+            exit 1
+          fi
+          echo "version=${version}" >> $GITHUB_OUTPUT
+          echo "Version found: ${version}"
+
+      - name: Check if tag exists
+        id: check-tag
+        run: |
+          version="${{ steps.get-version.outputs.version }}"
+          if git ls-remote --tags origin | grep -q "refs/tags/v${version}$"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag v${version} already exists, skipping release"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Tag v${version} does not exist, will create release"
+          fi
+
+      - name: Create tag and release
+        if: steps.check-tag.outputs.exists == 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="${{ steps.get-version.outputs.version }}"
+
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git tag -a "v${version}" -m "Release v${version}"
+          git push origin "v${version}"
+
+          gh release create "v${version}" \
+            --title "v${version}" \
+            --generate-notes
