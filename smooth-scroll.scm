@@ -43,7 +43,7 @@
     (move_visual_line_down)))
 
 (define (start-smooth-scroll direction size)
-  (set! *active-scroll-id* (+ *active-scroll-id* 1))
+  (set! *active-scroll-id* (modulo (+ *active-scroll-id* 1) 1000))
   (let ([my-scroll-id *active-scroll-id*]
         [scroll-fn (match direction
                      ['up move_up_single]
