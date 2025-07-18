@@ -29,7 +29,7 @@
     [else 10]))
 
 (define (calculate-step size)
-  (ceiling (/ size 50)))
+  (ceiling (/ size 40)))
 
 (define (move_up_single)
   (begin
