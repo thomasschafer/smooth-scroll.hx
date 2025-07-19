@@ -22,14 +22,13 @@
 
 (define (calculate-delay size)
   (cond
-    [(>= size 60) 0]
-    [(>= size 40) 1]
+    [(>= size 30) 0]
     [(>= size 20) 2]
     [(>= size 10) 5]
     [else 10]))
 
 (define (calculate-step size)
-  (ceiling (/ size 40)))
+  (ceiling (/ size 20)))
 
 (define (move_up_single)
   (begin
